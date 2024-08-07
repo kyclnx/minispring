@@ -8,6 +8,7 @@ import org.dom4j.Element;
  * @version 1.0
  * @since 1.0
  */
+//这也是我们解析 Bean 的核心方法，因为配置在 XML 内的 Bean 信息都是文本信息，需要解析之后变成内存结构才能注入到容器中。
 //将classPathXmlResource中解析的xml信息转换为BeanDefinition的形式
 public class XmlBeanDefinitionReader {
 
