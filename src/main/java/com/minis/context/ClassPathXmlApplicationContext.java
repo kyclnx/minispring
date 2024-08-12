@@ -9,17 +9,13 @@ import com.minis.core.ClassPathXmlResource;
 import com.minis.core.Resource;
 
 /**
- * 这个类在实例化的过程中做了三件事情，
- * 1、解析xml文件中的内容
- * 2、加载解析的内容，构建beanDefinition
- * 3、读取BeanDefinition的配置的信息，实例化bean，然后将它注入到beanFactory容器中
+ * 这里使用到了装饰器模式哦
  */
+public class ClassPathXmlApplicationContext implements BeanFactory, ApplicationEventPublisher {
 
-public class ClassPathXmlApplicationContext implements BeanFactory {
+    SimpleBeanFactory beanFactory;
 
-    BeanFactory beanFactory;
 
-    //构造器获取外部配置，解析出Bean的定义，形成内存映像。
     public ClassPathXmlApplicationContext(String fileName) {
         Resource resource = new ClassPathXmlResource(fileName);
         SimpleBeanFactory simpleBeanFactory = new SimpleBeanFactory();
@@ -28,15 +24,40 @@ public class ClassPathXmlApplicationContext implements BeanFactory {
         this.beanFactory = simpleBeanFactory;
     }
 
-
-
     @Override
     public Object getBean(String beanName) throws NoSuchBeanDefinitionException {
         return this.beanFactory.getBean(beanName);
     }
 
     @Override
-    public void registerBeanDefinition(BeanDefinition beanDefinition) {
-        this.beanFactory.registerBeanDefinition(beanDefinition);
+    public Boolean containsBean(String beanName) {
+        return this.beanFactory.containsBean(beanName);
+    }
+
+
+    public void registerBean(String beanName, Object obj) {
+        this.beanFactory.registerBean(beanName, obj);
+    }
+
+    @Override
+    public boolean isSingleton(String name) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isPrototype(String name) {
+        return false;
+    }
+
+    @Override
+    public Class<?> getType(String name) {
+        return null;
+    }
+
+
+    @Override
+    public void publishEvent(ApplicationEvent event) {
+
     }
 }

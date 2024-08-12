@@ -8,13 +8,7 @@ import org.dom4j.io.SAXReader;
 import java.net.URL;
 import java.util.Iterator;
 
-/**
- * @author mqz
- * @version 1.0
- * @since 1.0
- */
-public class ClassPathXmlResource implements Resource {
-    //解析XML文件的信息（但是解析之后我们需要的是beanDefinition的形式），这时候需要xmlBeanDefinitionReader
+public class ClassPathXmlResource implements Resource{
 
     Document document;
 
@@ -24,9 +18,12 @@ public class ClassPathXmlResource implements Resource {
 
     public ClassPathXmlResource(String fileName) {
         SAXReader saxReader = new SAXReader();
+        //
         URL xmlPath = this.getClass().getClassLoader().getResource(fileName);
         try {
+            //使用 SAXReader 实例来读取并解析 XML 文件。
             this.document = saxReader.read(xmlPath);
+            //获取 XML 文档根元素的迭代器，用于遍历根元素下的所有子元素。
             this.rootElement = document.getRootElement();
             this.elementIterator = this.rootElement.elementIterator();
         } catch (DocumentException e) {

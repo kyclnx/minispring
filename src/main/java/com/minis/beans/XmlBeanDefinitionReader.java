@@ -3,27 +3,50 @@ package com.minis.beans;
 import com.minis.core.Resource;
 import org.dom4j.Element;
 
-/**
- * @author mqz
- * @version 1.0
- * @since 1.0
- */
-//将classPathXmlResource中解析的xml信息转换为BeanDefinition的形式
+import java.util.List;
+
 public class XmlBeanDefinitionReader {
 
-    BeanFactory beanFactory;
+    SimpleBeanFactory bf;
 
-    public XmlBeanDefinitionReader(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public XmlBeanDefinitionReader(SimpleBeanFactory beanFactory) {
+        this.bf = beanFactory;
     }
 
-    //这个方法将解析的xml内容转换成BeanDefinition并且加载到beanFactory中
-    public void loadBeanDefinitions(Resource resource) {
-        while (resource.hasNext()) {
-            Element element = (Element) resource.next();
-            String beanId = element.attributeValue("id");
-            String beanClassName = element.attributeValue("class");
-            this.beanFactory.registerBeanDefinition(new BeanDefinition(beanId, beanClassName));
+    //将解析出来的XML转化为BeanDefinition的形式
+    public void loadBeanDefinitions(Resource res) {
+        while (res.hasNext()) {
+            Element element = (Element)res.next();
+            String beanID=element.attributeValue("id");
+            String beanClassName=element.attributeValue("class");
+
+            BeanDefinition beanDefinition=new BeanDefinition(beanID,beanClassName);
+
+            //handle properties
+            List<Element> propertyElements = element.elements("property");
+            PropertyValues PVS = new PropertyValues();
+            for (Element e : propertyElements) {
+                String pType = e.attributeValue("type");
+                String pName = e.attributeValue("name");
+                String pValue = e.attributeValue("value");
+                PVS.addPropertyValue(new PropertyValue(pType, pName, pValue));
+            }
+            beanDefinition.setPropertyValues(PVS);
+            //end of handle properties
+
+            //get constructor
+            List<Element> constructorElements = element.elements("constructor-arg");
+            ArgumentValues AVS = new ArgumentValues();
+            for (Element e : constructorElements) {
+                String pType = e.attributeValue("type");
+                String pName = e.attributeValue("name");
+                String pValue = e.attributeValue("value");
+                AVS.addArgumentValue(new ArgumentValue(pType,pName,pValue));
+            }
+            beanDefinition.setConstructorArgumentValues(AVS);
+            //end of handle constructor
+
+            this.bf.registerBeanDefinition(beanID,beanDefinition);
         }
     }
 
