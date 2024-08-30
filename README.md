@@ -1,0 +1,10 @@
+UML类图如下：
+![image](https://github.com/user-attachments/assets/982525c7-73f2-4e1d-83da-696fafc9ffcf)
+自己画的，用于基本梳理关系，但是不知道画的正确与否。
+### 心得体会
+本节也是看了很久很久，因为这一章节，类实在是太多了，但是总体梳理下来感觉就是对于上一节的内容实现了增强操作而已，其主要就是对于SimpleBeanFactroy进行了解放，以及增加了bean.xml文件的内容。
+
+按照顺序来说，也就是上一节最后一段而已，增加的一部分是，
+1、在解析了XML文件并且将其转化为BeanDefinition的形式之后每次注册一个BeanDefinition的时候，如果不是懒加载就立刻调用了getBean方法（这个方法也是在SimpleBeanFactory中），而getBean()方法会从SimpleBeanFactory继承DefaultSingletonBeanRegistry的能力中判断bean是否存在，如果不存在，创建并且注册进DefaultSingletonBeanRegistry。
+2、ClassPathXmlApplicationContext它的组装逻辑和上一节一样，但是现在XmlBeanDefinitionReader在遍历Resource向着simpleBeanFactory注册的时候，由于simplebeanFactory注册时候会创建所有非懒加载bean，所以现在applicationContext启动的时候就会创建所有非懒加载bean，上一节课中容器创建完成之后并不会创造bean,要到了获取bean的时候才会创建bean，对于getbean方法的调用提前到了注册beanDefinition的时候了。
+
