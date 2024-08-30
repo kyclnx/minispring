@@ -22,6 +22,7 @@ public class ClassPathXmlApplicationContext implements BeanFactory {
     //构造器获取外部配置，解析出Bean的定义，形成内存映像。
     public ClassPathXmlApplicationContext(String fileName) {
         Resource resource = new ClassPathXmlResource(fileName);
+        //DEBUG到了这一步解析了beans.xml文件，aservice和com.minis.test.AserviceImpl
         SimpleBeanFactory simpleBeanFactory = new SimpleBeanFactory();
         XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(simpleBeanFactory);
         reader.loadBeanDefinitions(resource);
