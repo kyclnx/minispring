@@ -18,7 +18,7 @@ public class XmlBeanDefinitionReader {
         this.beanFactory = beanFactory;
     }
 
-    //这个方法将解析的xml内容转换成BeanDefinition并且加载到beanFactory中
+    //这个方法将解析的xml内容转换成BeanDefinition并且加载到simpleBeanFactory中
     public void loadBeanDefinitions(Resource resource) {
         while (resource.hasNext()) {
             Element element = (Element) resource.next();
