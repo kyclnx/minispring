@@ -42,6 +42,15 @@ Document document = saxReader.read(xmlPath);
 -  新的applicationContext负责组装，可以根据它的名字来体现它的组装功能，例如ClassPathXmlApplicationContext  它组装的Resource的实现类是ClassPathXmlResource  ，然后因为是xml的，所以需要BeanDefinitionReader的实现类XmlBeanDefinitionReader来读取并注册进beanFactory，同时ApplicationContext也提供了getBean底层调用beanfactory的实现，提供了registerBeanDefinition  来向底层的beanFactory注册bean。
 -  beanFactory 提供了registerBeanDefinition和getBean接口，这样无论是applicationContext还是beanDefinitionReader都可以向它注册beanDefinition，只要向它注册了，就可以调用它的getBean方法，我一直很纠结为什么不是beanfactory调用不同的beanDefinitionReader，写完这些，好像有点理解了，这样beanfactory就很专注自己的getBean方法，别的组件要怎么注入，它都不管了。
 
-对一个Bean的定义，需要有一个类来对应。bean的定义可能是写在外部XML文件中的，类是运行时在内存中的，所以表达成Bean内存的映像”
 
 1, 反转: 反转的是对Bean的控制权, 使用"new"的方式是由程序员在代码中主动控制; 使用IOC的方式是由容器来主动控制Bean的创建以及后面的DI属性注入; 2, 反转在代码中的体现: 因为容器框架并不知道未来业务中需要注入哪个Bean, 于是通过配置文件等方式告诉容器, 容器使用反射技术管理Bean的创建, 属性注入, 生命周期等.
+
+
+
+### 小结
+通过本小节的学习，学习到了，ClassPathXmlApplicationContext，这个类调用ClassPathXmlResource解析了beans.xml文件（形成之后以Resource接口形式提供外部访问），创造了SimpleBeanFactroy对象，然后创建XMLBeanDefinitionReader的实例，并将SimpleBeanFactroy传递给它。
+通过loadBeanDefinitions(resource)方法，XmlBeanDefinitionReader会从Xml文件中读取所有Bean的定义，并将这些定义注册到传递进来的 BeanFactory中（但是在其重写在SimpleBeanFactory中）。
+
+获取Bean的实例，当调用getBean方法的时候，首先检查singletons中是否存在Bean的实例，如果存在的话，直接返回该实例。如果没有找到该实例SimpleBeanFactory 会查找 beanDefinitions 中是否有对应的定义。如果找到定义，就使用反射机制实例化这个 Bean，并将其存储到 singletons 中，以便下次直接使用。如果既没有找到实例也没有找到定义，会抛出 NoSuchBeanDefinitionException。
+
+一旦获取到Aservice的实例，就会调用它的方法sayHello()。
