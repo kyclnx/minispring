@@ -8,6 +8,9 @@ import org.dom4j.io.SAXReader;
 import java.net.URL;
 import java.util.Iterator;
 
+/**
+ * @author njx
+ */
 public class ClassPathXmlResource implements Resource{
 
     Document document;

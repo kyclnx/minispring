@@ -1,5 +1,10 @@
 package com.minis.beans;
 
+/**
+ * @author njx
+ * @version 1.0
+ * @since 1.0
+ */
 //存储bean
 public interface SingletonBeanRegistry {
     //注册

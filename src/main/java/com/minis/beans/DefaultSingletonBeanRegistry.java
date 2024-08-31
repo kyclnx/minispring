@@ -1,50 +1,107 @@
 package com.minis.beans;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-//定义了beanName列表和singleton的映射关系，
-// beanNames用于存储所有单例bean的别名,
-// singletons则存储Bean名称和实现类的映射关系
+
+/**
+ * @author njx
+ * @since 1.0
+ * @version 1.0
+ *
+ */
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
 
     //容器中存放所有bean的名称的列表
-    protected final List<String> beanNames = new ArrayList<>();
-
+    protected final List<String> beanNames = new ArrayList<>(256);
     //容器中存放所有bean实例的map
-    protected final Map<String, Object> singletons = new ConcurrentHashMap<>(256);
-//ConcurrentHashMap、synchronized
-// 为了确保在多线程并发的情况下，我们仍然能安全地实现对单例 Bean 的管理，
+    protected final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
+    protected Map<String, Set<String>>  dependentBeanMap = new ConcurrentHashMap<>(64);
+    protected Map<String, Set<String>> dependenciesForBeanMap = new ConcurrentHashMap<>(64);
+    //注册
     @Override
     public void registerSingleton(String beanName, Object singletonObject) {
-        synchronized (this.singletons) {
+        synchronized (this.singletonObjects) {
+            Object oldObject = this.singletonObjects.get(beanName);
+            if (oldObject != null) {
+                throw new IllegalStateException("Could not register object [" + singletonObject + "] under bean name '" + beanName + "': there is already object [" + oldObject + "] bound");
+            }
+            this.singletonObjects.put(beanName, singletonObject);
             beanNames.add(beanName);
-            singletons.put(beanName, singletonObject);
+            System.out.println(" bean registerded............. " + beanName);
         }
     }
 
+    //获取
     @Override
     public Object getSingleton(String beanName) {
-        return this.singletons.get(beanName);
+        return this.singletonObjects.get(beanName);
     }
 
+    //判断是否存在
     @Override
     public Boolean containsSingleton(String beanName) {
-        return this.singletons.containsKey(beanName);
+        return this.singletonObjects.containsKey(beanName);
     }
 
+    //获取单例bean
     @Override
     public String[] getSingletonNames() {
         return (String[]) beanNames.toArray();
     }
 
     protected void removeSingleton(String beanName) {
-        synchronized (this.singletons) {
+        synchronized (this.singletonObjects) {
             this.beanNames.remove(beanName);
-            this.singletons.remove(beanName);
+            this.singletonObjects.remove(beanName);
         }
     }
+
+    protected void registerDependentBean(String beanName, String dependentBeanName) {
+        Set<String> dependentBeans = this.dependentBeanMap.get(beanName);
+        if (dependentBeans != null && dependentBeans.contains(dependentBeanName)) {
+            return;
+        }
+
+        // No entry yet -> fully synchronized manipulation of the dependentBeans Set
+        synchronized (this.dependentBeanMap) {
+            dependentBeans = this.dependentBeanMap.get(beanName);
+            if (dependentBeans == null) {
+                dependentBeans = new LinkedHashSet<String>(8);
+                this.dependentBeanMap.put(beanName, dependentBeans);
+            }
+            dependentBeans.add(dependentBeanName);
+        }
+        synchronized (this.dependenciesForBeanMap) {
+            Set<String> dependenciesForBean = this.dependenciesForBeanMap.get(dependentBeanName);
+            if (dependenciesForBean == null) {
+                dependenciesForBean = new LinkedHashSet<String>(8);
+                this.dependenciesForBeanMap.put(dependentBeanName, dependenciesForBean);
+            }
+            dependenciesForBean.add(beanName);
+        }
+    }
+
+    protected boolean hasDependentBean(String beanName) {
+        return this.dependentBeanMap.containsKey(beanName);
+    }
+
+    protected String[] getDependentBeans(String beanName) {
+        Set<String> dependentBeans = this.dependentBeanMap.get(beanName);
+        if (dependentBeans == null) {
+            return new String[0];
+        }
+        return (String[]) dependentBeans.toArray();
+    }
+
+    protected String[] getDependenciesForBean(String beanName) {
+        Set<String> dependenciesForBean = this.dependenciesForBeanMap.get(beanName);
+        if (dependenciesForBean == null) {
+            return new String[0];
+        }
+        return (String[]) dependenciesForBean.toArray();
+
+    }
+
+
 }
-//修改SimpleBeanFactory，继承上一步创建的DefaultSingletonBeanRegistry，确保SimpleBeanFactory创建的Bean默认就是单例的。

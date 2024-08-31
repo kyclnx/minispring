@@ -5,35 +5,56 @@ import com.minis.beans.exception.NoSuchBeanDefinitionException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-//对于SimpleBeanFactory的改动主要是增加了对于containsBean和registerBean的实现。
-//这两处实现都是对于单例Bean的操作。
+
+/**
+ * @author njx
+ * @version 1.0
+ * @since 1.0
+ */
 public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory, BeanDefinitionRegistry {
 
     private final Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>(256);
+    private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
+    private List<String> beanDefinitionNames = new ArrayList<>();
 
     public SimpleBeanFactory() {
     }
+    public void refresh(){
+        for (String beanName : beanDefinitionNames){
+            try {
+                getBean(beanName);
+            } catch (NoSuchBeanDefinitionException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-    /**
-     * getBean方法会从SimpleBeanFactory继承的DefaultSingletonBeanRegistry能力中判断bean是否存在
-     * 不存在创建并且注册在DefaultSingletonBeanRegistry
-     * @param beanName
-     * @return
-     * @throws NoSuchBeanDefinitionException
-     */
     @Override
     public Object getBean(String beanName) throws NoSuchBeanDefinitionException {
         //先尝试拿到这个bean
         Object singleton = this.getSingleton(beanName);
         //如果没有再尝试创建新的bean
         if (null == singleton) {
-            BeanDefinition bd = beanDefinitions.get(beanName);
-            singleton = createBean(bd);
-            this.registerBean(beanName, singleton);
-            if (bd.getInitMethodName() != null) {
-                //TODO init method
+            //看是否有胚胎
+            singleton = this.earlySingletonObjects.get(beanName);
+            if (null == singleton) {
+                System.out.println("get bean null -------------- " + beanName);
+                BeanDefinition bd = beanDefinitions.get(beanName);
+                singleton=createBean(bd);
+                this.registerBean(beanName, singleton);
+                // TODO
+                //beanpostprocessor
+                //step 1 : postProcessBeforeInitialization
+                //step 2 : afterPropertiesSet
+                //step 3 : init-method
+                //step 4 : postProcessAfterInitialization。
+//                if (bd.getInitMethodName() != null) {
+//                }
             }
         }
         if (singleton == null) {
@@ -75,6 +96,7 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
     public void registerBeanDefinition(String name, BeanDefinition bd) {
         this.beanDefinitions.put(name, bd);
         this.beanNames.add(name);
+        //如果不是懒加载就立刻调用getBean
         if (!bd.isLazyInit()) {
             //TODO createBean()
             try {
@@ -108,34 +130,55 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
     //根据 BeanDefinition 提供的构造函数参数和属性值来设置 Bean 实例。
     private Object createBean(BeanDefinition bd) {
         Class<?> clz = null;
+        Object obj = doCreateBean(bd);
+
+        this.earlySingletonObjects.put(bd.getId(), obj);
+
+        try {
+            clz = Class.forName(bd.getClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        handleProperties(bd, clz, obj);
+
+        return obj;
+    }
+
+    private Object doCreateBean(BeanDefinition bd) {
+        Class<?> clz = null;
         Object obj = null;
         Constructor<?> con = null;
 
         try {
             clz = Class.forName(bd.getClassName());
 
-            //handle constructor
+            //处理构造器参数
             ArgumentValues argumentValues = bd.getConstructorArgumentValues();
-            if (argumentValues != null && !argumentValues.isEmpty()) {
+            //如果有参数
+            if (!argumentValues.isEmpty()) {
                 Class<?>[] paramTypes = new Class<?>[argumentValues.getArgumentCount()];
-                Object[] paramValues = new Object[argumentValues.getArgumentCount()];
-                for (int i = 0; i < argumentValues.getArgumentCount(); i++) {
+                Object[] paramValues =   new Object[argumentValues.getArgumentCount()];
+                //对于每一个参数，分数据类型分别处理
+                for (int i=0; i<argumentValues.getArgumentCount(); i++) {
                     ArgumentValue argumentValue = argumentValues.getIndexedArgumentValue(i);
                     if ("String".equals(argumentValue.getType()) || "java.lang.String".equals(argumentValue.getType())) {
                         paramTypes[i] = String.class;
                         paramValues[i] = argumentValue.getValue();
-                    } else if ("Integer".equals(argumentValue.getType()) || "java.lang.Integer".equals(argumentValue.getType())) {
+                    }
+                    else if ("Integer".equals(argumentValue.getType()) || "java.lang.Integer".equals(argumentValue.getType())) {
                         paramTypes[i] = Integer.class;
                         paramValues[i] = Integer.valueOf((String) argumentValue.getValue());
-                    } else if ("int".equals(argumentValue.getType())) {
+                    }
+                    else if ("int".equals(argumentValue.getType())) {
                         paramTypes[i] = int.class;
                         paramValues[i] = Integer.valueOf((String) argumentValue.getValue()).intValue();
-                    } else {
+                    }
+                    else {
                         paramTypes[i] = String.class;
                         paramValues[i] = argumentValue.getValue();
                     }
                 }
-
                 try {
                     con = clz.getConstructor(paramTypes);
                     obj = con.newInstance(paramValues);
@@ -148,7 +191,8 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                 } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 }
-            } else {
+            }
+            else {
                 obj = clz.newInstance();
             }
 
@@ -160,29 +204,51 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
             e.printStackTrace();
         }
 
+        System.out.println(bd.getId() + " bean created. " + bd.getClassName() + " : " + obj.toString());
+
+        return obj;
+
+    }
+
+    private void handleProperties(BeanDefinition bd, Class<?> clz, Object obj) {
         //handle properties
+        System.out.println("handle properties for bean : " + bd.getId());
         PropertyValues propertyValues = bd.getPropertyValues();
-        if (propertyValues != null && !propertyValues.isEmpty()) {
+        if (!propertyValues.isEmpty()) {
             for (int i = 0; i < propertyValues.size(); i++) {
                 PropertyValue propertyValue = propertyValues.getPropertyValueList().get(i);
                 String pName = propertyValue.getName();
                 String pType = propertyValue.getType();
                 Object pValue = propertyValue.getValue();
-
+                boolean isRef = propertyValue.getIsRef();
                 Class<?>[] paramTypes = new Class<?>[1];
-                if ("String".equals(pType) || "java.lang.String".equals(pType)) {
-                    paramTypes[0] = String.class;
-                } else if ("Integer".equals(pType) || "java.lang.Integer".equals(pType)) {
-                    paramTypes[0] = Integer.class;
-                } else if ("int".equals(pType)) {
-                    paramTypes[0] = int.class;
-                } else {
-                    paramTypes[0] = String.class;
-                }
-
                 Object[] paramValues = new Object[1];
-                paramValues[0] = pValue;
+                if (!isRef) {
+                    if ("String".equals(pType) || "java.lang.String".equals(pType)) {
+                        paramTypes[0] = String.class;
+                    } else if ("Integer".equals(pType) || "java.lang.Integer".equals(pType)) {
+                        paramTypes[0] = Integer.class;
+                    } else if ("int".equals(pType)) {
+                        paramTypes[0] = int.class;
+                    } else {
+                        //默认为String
+                        paramTypes[0] = String.class;
+                    }
 
+                    paramValues[0] = pValue;
+                } else { //is ref, create the dependent beans
+                    try {
+                        paramTypes[0] = Class.forName(pType);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        paramValues[0] = getBean((String) pValue);
+                    } catch (NoSuchBeanDefinitionException e) {
+                        e.printStackTrace();
+                    }
+                }
+                //按照setXxxx规范查找setter方法，调用setter方法设置属性值
                 String methodName = "set" + pName.substring(0, 1).toUpperCase() + pName.substring(1);
 
                 Method method = null;
@@ -203,11 +269,10 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                     e.printStackTrace();
                 }
 
+
             }
         }
 
-
-        return obj;
-
     }
+
 }

@@ -1,5 +1,8 @@
 package com.minis.context;
 
+/**
+ * @author njx
+ */
 public interface ApplicationEventPublisher {
 
 

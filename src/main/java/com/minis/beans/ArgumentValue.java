@@ -1,4 +1,8 @@
 package com.minis.beans;
+
+/**
+ * @author njx
+ */
 public class ArgumentValue {
     private Object value;
     private String type;
@@ -13,9 +17,7 @@ public class ArgumentValue {
         this.name = name;
     }
 
-    public Object getValue() {
-        return value;
-    }
+    public Object getValue() {return value;}
 
     public void setValue(Object value) {
         this.value = value;

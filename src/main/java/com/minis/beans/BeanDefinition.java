@@ -1,4 +1,10 @@
 package com.minis.beans;
+
+/**
+ * @author njx
+ * @version 1.0
+ * @since 1.0
+ */
 public class BeanDefinition {
 
 
@@ -6,7 +12,7 @@ public class BeanDefinition {
 
     String SCOPE_PROTOTYPE = "prototype";
 
-    private boolean lazyInit = false;
+    private boolean lazyInit = true;
 
     private String[] dependsOn;
 
@@ -77,7 +83,6 @@ public class BeanDefinition {
         this.lazyInit = lazyInit;
     }
 
-    //懒加载
     public boolean isLazyInit() {
         return this.lazyInit;
     }

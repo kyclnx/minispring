@@ -3,6 +3,10 @@ package com.minis.context;
 import java.util.EventObject;
 //**事件监听**的基础之上进行了简单的封装。。
 //目前还没有任何实现，方便后续进行扩展
+
+/**
+ * @author njx
+ */
 public class ApplicationEvent extends EventObject {
 
     private static final long serialVersionUID = 1L;
