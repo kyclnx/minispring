@@ -1,3 +1,6 @@
+AService、AServiceImpl、BaseService、BaseBaseService之间的关系。
+![image](https://github.com/user-attachments/assets/e506ca8f-d671-494d-a262-c7061010dd8c)
+
 ### 心得体会
 第一二节分别演示了，beans.xml文件中，setter注入以及构造器注入的一些流程。但是如果有多个类，而且这些类之间具有一些关系，即一个Bean需要依赖另外一个Bean的时候，此时如何配置以及管理这些关系。
 
