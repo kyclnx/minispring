@@ -1,6 +1,14 @@
 AService、AServiceImpl、BaseService、BaseBaseService之间的关系。
 ![image](https://github.com/user-attachments/assets/678218b4-261c-4371-be50-a908f3cb7253)
 
+### 解决属性依赖的问题
+- 先实例化 AService，此时它是早期的不完整毛胚实例，好多属性还没被赋值，将实例放置到 earlySingletonObjects 中备用。然后给 AService 注入属性，这个时候发现它还要依赖 BaseService。
+- 实例化 BaseService，它也是早期的不完整毛胚实例，我们也将实例放到 earlySingletonObjects 中备用。然后再给 BaseService 注入属性，又发现它依赖 BaseBaseService。
+- 实例化 BaseBaseService，此时它仍然是早期的不完整的实例，同样将实例放置到 earlySingletonObjects 中备用，然后再给 BaseBaseService 属性赋值，这个时候又发现它反过来还要依赖 AService。
+- 我们从 earlySingletonObjects 结构中找到 AService 的早期毛胚实例，取出来给 BaseBaseService 注入属性，这意味着这时 BaseBaseService 所用的 AService 实例是那个早期的毛胚实例。这样就先创建好了 BaseBaseService。
+- 程序控制流回到第二步，完成 BaseService 的属性注入。
+- 程序控制流回到第一步，完成 AService 的属性注入。至此，所有的 Bean 就都创建完了。
+通过上述过程可以知道，这一系列的 Bean 是纠缠在一起创建的，我们不能简单地先后独立创建它们，而是要作为一个整体来创建。
 
 ### 心得体会
 第一二节分别演示了，beans.xml文件中，setter注入以及构造器注入的一些流程。但是如果有多个类，而且这些类之间具有一些关系，即一个Bean需要依赖另外一个Bean的时候，此时如何配置以及管理这些关系。
