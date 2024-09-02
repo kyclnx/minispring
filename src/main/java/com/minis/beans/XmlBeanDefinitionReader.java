@@ -46,6 +46,7 @@ public class XmlBeanDefinitionReader {
             beanDefinition.setConstructorArgumentValues(AVS);
             //end of handle constructor
 
+            //将创建好的bean注册到beanFactory中
             this.bf.registerBeanDefinition(beanID,beanDefinition);
         }
     }
