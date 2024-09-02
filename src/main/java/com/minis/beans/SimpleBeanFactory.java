@@ -24,6 +24,7 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
 
     public SimpleBeanFactory() {
     }
+    //对所有的 Bean 调用了一次 getBean()，利用 getBean() 方法中的 createBean() 创建 Bean 实例，就可以只用一个方法把容器中所有的 Bean 的实例创建出来了。
     public void refresh(){
         for (String beanName : beanDefinitionNames){
             try {
@@ -34,6 +35,7 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
         }
     }
 
+    //首先要判断有没有已经创建好的 bean，有的话直接取出来，如果没有就检查 earlySingletonObjects 中有没有相应的毛胚 Bean，有的话直接取出来，没有的话就去创建，并且会根据 Bean 之间的依赖关系把相关的 Bean 全部创建好。
     @Override
     public Object getBean(String beanName) throws NoSuchBeanDefinitionException {
         //先尝试拿到这个bean
@@ -145,6 +147,7 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
         return obj;
     }
 
+    //专门负责创建早期的毛胚实例。毛胚实例创建好后会放在 earlySingletonObjects 结构中
     private Object doCreateBean(BeanDefinition bd) {
         Class<?> clz = null;
         Object obj = null;
