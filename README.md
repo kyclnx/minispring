@@ -13,7 +13,7 @@ SimpleBeanFactory现在用于存储真正的bean对象（beanName, Object），�
 不理解为啥会先输出abc, 3
 具体执行顺序：
 加载和解析 beans.xml：XmlBeanDefinitionReader 解析 beans.xml 文件，提取出 AServiceImpl 的构造参数 "abc" 和 3，并将这些参数存储在 ArgumentValues 对象中。
-
 实例化 Bean：BeanFactory 调用 AServiceImpl 的构造方法，并传入 "abc" 和 3 作为参数。在构造函数中，输出了这两个参数的值。
-
 完成实例化：构造方法执行完毕后，AServiceImpl 的实例就被创建出来了，随后可能还会进行依赖注入或其他初始化操作。
+
+此节课程，将lazyInit赋值为false(!lazyInit为True)，然后getBean()，并且createbean()，进行了操作。这个应该属于**预加载**，在容器启动的时候就加载并且实例化所有的bean(所以，它先输出了abc,3)。
