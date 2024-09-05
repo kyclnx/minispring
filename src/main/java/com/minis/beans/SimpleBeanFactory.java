@@ -239,7 +239,8 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                     }
 
                     paramValues[0] = pValue;
-                } else { //is ref, create the dependent beans
+                    //如果有ref属性则继续调用createBean()方法
+                } else { 
                     try {
                         paramTypes[0] = Class.forName(pType);
                     } catch (ClassNotFoundException e) {
