@@ -1,4 +1,6 @@
-package com.minis.beans;
+package com.minis.beans.factory.support;
+
+import com.minis.beans.factory.config.SingletonBeanRegistry;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +16,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     //容器中存放所有bean的名称的列表
     protected final List<String> beanNames = new ArrayList<>(256);
-    //容器中存放所有bean实例的map
+    //存储完全创造好的单例bean的实例
     protected final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
     protected Map<String, Set<String>>  dependentBeanMap = new ConcurrentHashMap<>(64);
     protected Map<String, Set<String>> dependenciesForBeanMap = new ConcurrentHashMap<>(64);

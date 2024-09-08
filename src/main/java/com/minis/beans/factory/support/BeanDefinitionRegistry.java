@@ -1,4 +1,7 @@
-package com.minis.beans;
+package com.minis.beans.factory.support;
+
+import com.minis.beans.factory.config.BeanDefinition;
+
 //这个相当于一个存放BeanDefinition的仓库，可以存放、移除、获取、判断BeanDefinition对象
 public interface BeanDefinitionRegistry {
     //注册bean的定义

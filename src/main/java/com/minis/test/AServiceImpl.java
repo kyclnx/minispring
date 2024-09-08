@@ -1,5 +1,7 @@
 package com.minis.test;
 
+import com.minis.beans.factory.annotation.Autowired;
+
 public class AServiceImpl implements AService {
     private String name;
     private int level;

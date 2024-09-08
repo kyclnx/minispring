@@ -33,8 +33,6 @@ public class ClassPathXmlResource implements Resource{
             throw new RuntimeException(e);
         }
     }
-
-
     @Override
     public boolean hasNext() {
         return this.elementIterator.hasNext();

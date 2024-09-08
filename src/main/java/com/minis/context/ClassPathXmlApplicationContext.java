@@ -1,39 +1,44 @@
 package com.minis.context;
 
-import com.minis.beans.BeanDefinition;
-import com.minis.beans.BeanFactory;
-import com.minis.beans.SimpleBeanFactory;
-import com.minis.beans.XmlBeanDefinitionReader;
-import com.minis.beans.exception.NoSuchBeanDefinitionException;
+import com.minis.beans.factory.BeanFactory;
+import com.minis.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import com.minis.beans.factory.config.AutowireCapableBeanFactory;
+import com.minis.beans.factory.exception.BeansException;
+import com.minis.beans.factory.support.AbstractBeanFactory;
+import com.minis.beans.factory.xml.XmlBeanDefinitionReader;
+import com.minis.beans.factory.exception.NoSuchBeanDefinitionException;
 import com.minis.core.ClassPathXmlResource;
 import com.minis.core.Resource;
 
 /**
+ * @author mqz
+ * @version 1.0
+ * @since 1.0
  * 这里使用到了装饰器模式哦
  */
 public class ClassPathXmlApplicationContext implements BeanFactory, ApplicationEventPublisher {
 
-    SimpleBeanFactory beanFactory;
-    public ClassPathXmlApplicationContext(String filename){
-        this(filename, true);
+    AbstractBeanFactory beanFactory;
+
+
+    public ClassPathXmlApplicationContext(String fileName) {
+        this(fileName, true);
     }
 
-
     public ClassPathXmlApplicationContext(String fileName, boolean isRefresh) {
-        Resource resource = new ClassPathXmlResource(fileName);
-        SimpleBeanFactory simpleBeanFactory = new SimpleBeanFactory();
-        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(simpleBeanFactory);
-        reader.loadBeanDefinitions(resource);
-        this.beanFactory = simpleBeanFactory;
-
+        Resource res = new ClassPathXmlResource(fileName);
+        AutowireCapableBeanFactory beanFactory = new AutowireCapableBeanFactory();
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+        reader.loadBeanDefinitions(res);
+        this.beanFactory = beanFactory;
 
         if (isRefresh) {
-            this.beanFactory.refresh();
+            refresh();
         }
     }
 
     @Override
-    public Object getBean(String beanName) throws NoSuchBeanDefinitionException {
+    public Object getBean(String beanName) throws NoSuchBeanDefinitionException, BeansException {
         return this.beanFactory.getBean(beanName);
     }
 
@@ -43,8 +48,23 @@ public class ClassPathXmlApplicationContext implements BeanFactory, ApplicationE
     }
 
 
+    public void refresh() {
+        // Register bean processors that intercept bean creation.
+        registerBeanPostProcessors((AutowireCapableBeanFactory) this.beanFactory);
+        // Initialize other special beans in specific context subclasses.
+        onRefresh();
+    }
+
+    private void registerBeanPostProcessors(AutowireCapableBeanFactory beanFactory) {
+        beanFactory.addBeanPostProcessor(new AutowiredAnnotationBeanPostProcessor());
+    }
+
     public void registerBean(String beanName, Object obj) {
         this.beanFactory.registerBean(beanName, obj);
+    }
+
+    private void onRefresh() {
+        this.beanFactory.refresh();
     }
 
     @Override

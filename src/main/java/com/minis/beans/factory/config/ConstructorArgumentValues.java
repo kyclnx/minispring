@@ -1,4 +1,4 @@
-package com.minis.beans;
+package com.minis.beans.factory.config;
 
 import java.util.*;
 
@@ -7,21 +7,21 @@ import java.util.*;
  * @version 1.0
  * @since 1.0
  */
-public class ArgumentValues {
+public class ConstructorArgumentValues {
 
 
-    private final Map<Integer, ArgumentValue> indexedArgumentValues = new HashMap<>(0);
+    private final Map<Integer, ConstructorArgumentValue> indexedArgumentValues = new HashMap<>(0);
 
-    private final List<ArgumentValue> genericArgumentValues = new ArrayList<>();
+    private final List<ConstructorArgumentValue> genericArgumentValues = new ArrayList<>();
 
-    public ArgumentValues() {
+    public ConstructorArgumentValues() {
     }
 
-    private void addArgumentValue(Integer key, ArgumentValue newValue) {
+    private void addArgumentValue(Integer key, ConstructorArgumentValue newValue) {
         indexedArgumentValues.put(key, newValue);
     }
 
-    public void addArgumentValue(ArgumentValue argumentValue) {
+    public void addArgumentValue(ConstructorArgumentValue argumentValue) {
         this.genericArgumentValues.add(argumentValue);
     }
 
@@ -30,23 +30,23 @@ public class ArgumentValues {
     }
 
     public void addGenericArgumentValue(Object value, String type) {
-        this.genericArgumentValues.add(new ArgumentValue(type, value));
+        this.genericArgumentValues.add(new ConstructorArgumentValue(type, value));
     }
 
-    private void addGenericArgumentValue(ArgumentValue newValue) {
+    private void addGenericArgumentValue(ConstructorArgumentValue newValue) {
         if (newValue.getName() != null) {
             this.genericArgumentValues.removeIf(currentValue -> newValue.getName().equals(currentValue.getName()));
         }
         this.genericArgumentValues.add(newValue);
     }
 
-    public ArgumentValue getIndexedArgumentValue(int index) {
-        ArgumentValue argumentValue = this.genericArgumentValues.get(index);
+    public ConstructorArgumentValue getIndexedArgumentValue(int index) {
+        ConstructorArgumentValue argumentValue = this.genericArgumentValues.get(index);
         return argumentValue;
     }
 
-    public ArgumentValue getGenericArgumentValue(String requiredName) {
-        for (ArgumentValue valueHolder : this.genericArgumentValues) {
+    public ConstructorArgumentValue getGenericArgumentValue(String requiredName) {
+        for (ConstructorArgumentValue valueHolder : this.genericArgumentValues) {
             if (valueHolder.getName() != null && (!valueHolder.getName().equals(requiredName))) {
                 continue;
             }

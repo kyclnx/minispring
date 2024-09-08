@@ -1,6 +1,9 @@
 package com.minis.test;
 
+import com.minis.beans.factory.annotation.Autowired;
+
 public class BaseBaseService {
+
     private AServiceImpl as;
 
     public AServiceImpl getAs() {
@@ -13,5 +16,6 @@ public class BaseBaseService {
     }
     public void sayHello() {
         System.out.println("Base Base Service says hello");
+
     }
 }

@@ -1,21 +1,23 @@
 package com.minis;
 
-import com.minis.beans.exception.NoSuchBeanDefinitionException;
+import com.minis.beans.factory.exception.BeansException;
+import com.minis.beans.factory.exception.NoSuchBeanDefinitionException;
 import com.minis.context.ClassPathXmlApplicationContext;
 import com.minis.test.AService;
-
-/**
- * @author njx
- */
+import com.minis.test.BaseService;
 public class Main {
 
-    public static void main(String[] args) throws NoSuchBeanDefinitionException {
+    public static void main(String[] args) {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
         AService aService;
+        BaseService bService;
         try {
-            aService = (AService)ctx.getBean("aservice");
-            aService.sayHello();
-        } catch (NoSuchBeanDefinitionException e) {
+//            aService = (AService)ctx.getBean("aservice");
+//            aService.sayHello();
+
+            bService = (BaseService)ctx.getBean("baseservice");
+            bService.sayHello();
+        } catch (BeansException | NoSuchBeanDefinitionException e) {
             e.printStackTrace();
         }
     }

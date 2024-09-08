@@ -1,4 +1,4 @@
-package com.minis.beans;
+package com.minis.beans.factory.config;
 
 /**
  * @author njx
@@ -16,4 +16,3 @@ public interface SingletonBeanRegistry {
     //获取所有的单例bean
     String[] getSingletonNames();
 }
-//接口定义好了之后就需要定义一个默认实现类DefaultSingletonBeanRegistry
